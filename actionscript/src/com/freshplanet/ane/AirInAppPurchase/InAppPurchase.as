@@ -59,11 +59,12 @@ package com.freshplanet.ane.AirInAppPurchase
 		}
 		
 		
-		public function init():void
+		public function init(googlePlayKey:String, debug:Boolean = false):void
 		{
-			if (this.isInAppPurchaseSupported)
+			if (Capabilities.manufacturer.indexOf('Android') > -1)
 			{
-				extCtx.call("init");
+				trace("[InAppPurchase] init library");
+				extCtx.call("initLib", googlePlayKey, debug);
 			}
 		}
 		
@@ -91,12 +92,12 @@ package com.freshplanet.ane.AirInAppPurchase
 		
 		
 		
-		public function getProductsInfo(productsId:Array):void
+		public function getProductsInfo(productsId:Array, subscriptionIds:Array):void
 		{
 			if (this.isInAppPurchaseSupported)
 			{
 				trace("[InAppPurchase] get Products Info");
-				extCtx.call("getProductsInfo", productsId);
+				extCtx.call("getProductsInfo", productsId, subscriptionIds);
 			} else
 			{
 				this.dispatchEvent( new InAppPurchaseEvent(InAppPurchaseEvent.PRODUCT_INFO_ERROR) );
@@ -151,6 +152,16 @@ package com.freshplanet.ane.AirInAppPurchase
 			}
 		}
 
+
+		public function stop():void
+		{
+			if (Capabilities.manufacturer.indexOf('Android') > -1)
+			{
+				trace("[InAppPurchase] stop library");
+				extCtx.call("stopLib");
+			}
+		}
+
 		
 		public function get isInAppPurchaseSupported():Boolean
 		{
@@ -167,6 +178,9 @@ package com.freshplanet.ane.AirInAppPurchase
 			var e:InAppPurchaseEvent;
 			switch(event.code)
 			{
+				case "PRODUCT_INFO_RECEIVED":
+					e = new InAppPurchaseEvent(InAppPurchaseEvent.PRODUCT_INFO_RECEIVED, event.level);
+					break;
 				case "PURCHASE_SUCCESSFUL":
 					e = new InAppPurchaseEvent(InAppPurchaseEvent.PURCHASE_SUCCESSFULL, event.level);
 					break;
@@ -179,11 +193,17 @@ package com.freshplanet.ane.AirInAppPurchase
 				case "PURCHASE_DISABLED":
 					e = new InAppPurchaseEvent(InAppPurchaseEvent.PURCHASE_DISABLED, event.level);
 					break;
-				case "PRODUCT_INFO_SUCCESS":
-					e = new InAppPurchaseEvent(InAppPurchaseEvent.PRODUCT_INFO_RECEIVED, event.level);
-					break;
 				case "PRODUCT_INFO_ERROR":
 					e = new InAppPurchaseEvent(InAppPurchaseEvent.PRODUCT_INFO_ERROR);
+					break;
+				case "SUBSCRIPTION_ENABLED":
+					e = new InAppPurchaseEvent(InAppPurchaseEvent.SUBSCRIPTION_ENABLED);
+					break;
+				case "SUBSCRIPTION_DISABLED":
+					e = new InAppPurchaseEvent(InAppPurchaseEvent.SUBSCRIPTION_DISABLED);
+					break;
+				case "RESTORE_INFO_RECEIVED":
+					e = new InAppPurchaseEvent(InAppPurchaseEvent.RESTORE_INFO_RECEIVED, event.level);
 					break;
 				default:
 				
